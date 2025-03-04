@@ -1,5 +1,7 @@
 import fetch from "node-fetch";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
+import express from "express";
+
 dotenv.config();
 
 import { Client, GatewayIntentBits, Partials } from "discord.js";
@@ -137,4 +139,15 @@ client.on("messageReactionAdd", async (reaction, user) => {
         }
     }
 })
+
+//start web server
+const app = express();
+
+app.get('/', (req, res) => {
+    res.send('Bot is alive!');
+});
+
+app.listen(3000, () => {
+    console.log('Server is running!');
+});
 client.login(process.env.BOT_TOKEN);
