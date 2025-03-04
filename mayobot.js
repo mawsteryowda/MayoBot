@@ -30,6 +30,8 @@ const twitchClientSecret = process.env.TWITCH_CLIENT_SECRET; //from twitch dev
 const twitchUsername = process.env.TWITCH_USERNAME; // Your Twitch username
 const discordChannelId = process.env.LIVE_CHANNEL_ID; // Channel where message is sent
 
+const watcher = process.env.WATCHER_ROLE_ID
+
 let isLive = false; // Track stream status
 
 // Function to get Twitch Access Token
@@ -68,7 +70,7 @@ async function checkTwitchLive() {
         if (!isLive) { // If not already marked as live
             isLive = true;
             const discordChannel = await client.channels.fetch(discordChannelId);
-            discordChannel.send(`🎥 **${twitchUsername} is now LIVE on Twitch!**\n🔴 Watch here: https://twitch.tv/${twitchUsername}`);
+            discordChannel.send(`<@&${watcher}> **${twitchUsername} is now LIVE on Twitch! 🔴**\n Watch here: https://twitch.tv/${twitchUsername}`);
             console.log("✅ Live message sent to Discord.");
         }
     } else {
@@ -98,7 +100,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 
     const guild = reaction.message.guild;
     const member = await guild.members.fetch(user.id);
-    console.log(`Logged in as ${member}`)
+    //console.log(`Logged in as ${member}`)
     
     // Role ID (replace with the actual role ID you want to assign)
     const mustard = process.env.MUSTARD_ROLE_ID;
@@ -108,7 +110,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
     // Check if the reaction is on the webhook message
     if (reaction.message.id === webHookMessageId) {
         const role = guild.roles.cache.get(mustard);
-        console.log(role)
+        //console.log(role)
         if (role) {
             await member.roles.add(role);
             console.log(`✅ Added role to ${user.tag}`);
@@ -116,4 +118,23 @@ client.on("messageReactionAdd", async (reaction, user) => {
     }
 });
 
+
+client.on("messageReactionAdd", async (reaction, user) => {
+    if (user.bot) return;
+
+    const guild = reaction.message.guild;
+    const member = await guild.members.fetch(user.id);
+
+
+    const liveWebhookMessageId = process.env.LIVE_WEBHOOK_MESSAGE_ID
+    const allowedEmoji = "🔴";
+
+    if (reaction.message.id === liveWebhookMessageId) {
+        const role = guild.roles.cache.get(watcher);
+        if (role) {
+            await member.roles.add(role);
+            console.log(`✅ Added role to ${user.tag}`);
+        }
+    }
+})
 client.login(process.env.BOT_TOKEN);
